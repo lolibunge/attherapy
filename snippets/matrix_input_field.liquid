@@ -1,0 +1,85 @@
+{%- comment -%}
+Required values
+title: <product.title>
+variant: <product.variant>
+variant_options: <product.variant options>
+group: <customer_group> inherit form customer_detect
+discount: <customer_discount> inherit from customer_detect
+specific: <customer_specific_prices> inherit from customer_detect
+
+Apply discount by customer tag
+Apply specific price by cutomer metafield
+
+Calculate the hash code
+x = concat(P ID)
+x = x.slice(0, 10)
+x = x - OP
+x = x * 3
+{%- endcomment -%}
+{%- liquid
+	assign NS = 'DEAR'
+	assign ETA = blank
+	assign current_price = variant.price
+	if variant.metafields[NS][group] != blank
+		assign current_price = variant.metafields[NS][group]
+	endif
+	if discount > 0
+		assign current_price = 100.0 | minus: discount | times: current_price | times: 0.01 | ceil
+	endif
+	if specific[variant.sku] and specific[variant.sku] < current_price
+		assign current_price = specific[variant.sku]
+	endif
+	assign hash = current_price | append: variant.id | slice: 0, 14 | plus: 0 | minus: variant.price | times: 3
+	if variant.metafields[NS]['ETA'] != blank
+		assign ETA = variant.metafields[NS]['ETA']
+	endif
+-%}
+<div class="input-group">
+	<div class="tooltip is-hidden-mobile-only">
+		<div class="tooltip--variant-info">
+			<span>{{ variant.sku }}</span><br/>
+			{%- for option_name in variant_options -%}
+			<span>
+				{%- if option_name contains 'Default Title' -%}
+					{{ product.title }}
+				{%- else -%}
+					{{ option_name }}
+				{%- endif -%}
+			</span>
+			{%- endfor -%}
+		</div>
+		<div class="tooltip--variant-status">
+			<span>Available: <b class="status-text {% if variant.inventory_quantity > 0 %}green{% endif %}" data-vid="{{ variant.id }}">
+				{%- if variant.available -%}
+					{%- if variant.inventory_quantity > 0 -%}
+						{{ 'products.status.available' | t }}
+					{%- else -%}
+						{{ 'products.status.back_order' | t }}
+					{%- endif -%}
+				{%- else -%}
+					{{ 'products.status.sold_out' | t }}
+				{%- endif -%}</b>
+			</span>
+			{%- liquid
+				if ETA != blank and variant.inventory_quantity <= 0
+					echo '<br/><span class="tooltip--variant-eta">ETA: {{ETA}}</span>' | replace: '{{ETA}}', ETA
+				endif
+			-%}
+		</div>
+	</div>
+	<button class="minus-symbol">-</button>
+	<input type="text" class="" value="" min="0" max="{{ variant.inventory_quantity }}"
+		placeholder="0"
+		data-variant-qty='{{ variant.inventory_quantity }}'
+		data-policy='{{ variant.inventory_policy }}'
+		data-tier-name='{{ group }}'
+		data-variant-id='{{ variant.id }}'
+		data-variant-sku='{{ variant.sku }}'
+		data-hash='{{ hash }}'
+		data-variant-price='{{ current_price }}'
+	/>
+	<button class="plus-symbol">+</button>
+	<div class="variant_price_block">
+		<span class="variant_price money">{{ current_price | money }}</span>
+	</div>
+</div>

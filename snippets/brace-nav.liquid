@@ -1,0 +1,40 @@
+{% comment %}
+Require variables
+block: section.block
+class: class name
+{%- endcomment -%}
+{%- assign bs = block.settings -%}
+{%- assign ps = bs.icon_position -%}
+{%- assign mylink = bs.redirect_url.url | default: '#' -%}
+{%- capture icon_svg -%}
+<svg xmlns="http://www.w3.org/2000/svg" width="6.573" height="11.024" viewBox="0 0 6.573 11.024">
+  <path id="Path_19" data-name="Path 19" d="M1250.5,2050.566l4.982,4.982-4.982,4.982" transform="translate(-1249.97 -2050.036)" fill="none" stroke="#d3d3d3" stroke-width="1.5"/>
+</svg>
+{%- endcapture -%}
+<div class="brace-nav-block icon-{{ ps }} {{ class }} bid-{{ block.id }}" onClick="window.location.href = '{{mylink}}'" >
+	{%- if ps == 'left' -%}
+		<span class="circle">{{ icon_svg }}</span>
+		<span class="text">{{ bs.title }}</span>
+	{%- elsif ps == 'right' -%}
+		<span class="text">{{ bs.title }}</span>
+		<span class="circle">{{ icon_svg }}</span>
+	{%- elsif ps == 'top' -%}
+		<span class="circle">{{ icon_svg }}</span>
+		<span class="text">{{ bs.title }}</span>
+	{%- elsif ps == 'bottom' -%}
+		<span class="text">{{ bs.title }}</span>
+		<span class="circle">{{ icon_svg }}</span>
+	{%- endif -%}
+</div>
+
+<style>
+.bid-{{ block.id }} {
+{%- if block.type contains 'tablet' %}
+	bottom: calc(50% - {{bs.height | times: 0.5 }}px - {{bs.horizontal | default: 0 }}%);
+	left: calc(100% - {{bs.width}}px - {{bs.vertical | default: 0 }}%);
+{%- else %}
+	bottom: calc(50% - {{bs.horizontal | default: 0 }}px);
+	left: calc(50% - {{bs.vertical | default: 0 }}px);
+{%- endif %}
+}
+</style>

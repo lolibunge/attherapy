@@ -1,0 +1,198 @@
+{%- assign settings = section.settings -%}
+{%- assign padding_top = settings.padding_top -%}
+{%- assign padding_bottom = settings.padding_bottom -%}
+{% style %}
+	.section__wrapper {
+		padding-top: {{ padding_top }}px;
+		padding-bottom: {{ padding_bottom }}px;
+	}
+{% endstyle %}
+
+<section class="section__wrapper section">
+	<div class="container">
+		<div class="two-fifths medium-down--one-whole column has-padding-bottom">
+			<div class="breadcrumb__container">
+				{% include 'breadcrumb', type: 'page' %}
+			</div>
+		</div>
+		<div class="three-fifths column"></div>
+		<div class="column one-whole brace-advisor desktop text-center">
+			<img data-srcset="{{ settings.image | img_url: '954x954', crop: 'center' }}" class="lazyload" alt="Brace Advisor - Model" />
+			{%- for block in section.blocks -%}
+				{%- if block.type contains 'desktop' -%}
+					{%- render 'brace-nav', block: block, class: 'desktop' -%}
+				{%- endif -%}
+			{%- endfor -%}
+		</div>
+		<div class="column one-whole brace-advisor desktop text-center">
+			<h1>{{ page.title }}</h1>
+			<div class="subtitle">{{ page.content | strip_html }}</div>
+		</div>
+		<div class="column one-whole brace-advisor tablet is-marginless text-center">
+			<img data-srcset="{{ settings.image | img_url: '954x954', crop: 'center' }}" class="lazyload" alt="Brace Advisor - Model" />
+			{%- for block in section.blocks -%}
+				{%- if block.type contains 'tablet' -%}
+					{%- render 'brace-nav', block: block, class: 'tablet' -%}
+				{%- endif -%}
+			{%- endfor -%}
+		</div>
+		<div class="column one-whole brace-advisor tablet is-marginless text-center">
+			<h1>{{ page.title }}</h1>
+			<div class="subtitle">{{ page.content | strip_html }}</div>
+		</div>
+	</div>
+</section>
+
+{% schema %}
+{
+	"name": "Brace Advisor",
+	"blocks": [
+		{
+			"type": "navigate_block_desktop",
+			"name": "Navigate Block (Destkop)",
+			"settings": [
+				{
+					"id": "title",
+					"type": "text",
+					"label": "Display Title (Desktop)"
+				},
+				{
+					"id": "redirect_url",
+					"type": "url",
+					"label": "Redirect to"
+				},
+				{
+					"id": "horizontal",
+					"type": "text",
+					"label": "Horizontal Position",
+					"default": "0",
+					"info": "unit: px"
+				},
+				{
+					"id": "vertical",
+					"type": "text",
+					"label": "Vertical Position",
+					"default": "0",
+					"info": "unit: px"
+				},
+				{
+					"id": "icon_position",
+					"type": "select",
+					"label": "Icon Position",
+					"options": [
+						{
+							"group": "value",
+							"value": "left",
+							"label": "Left"
+						},
+						{
+							"group": "value",
+							"value": "right",
+							"label": "Right"
+						}
+
+					]
+				}
+			]
+		},
+		{
+			"type": "navigate_block_tablet",
+			"name": "Navigate Block (Tablet)",
+			"settings": [
+				{
+					"id": "title",
+					"type": "text",
+					"label": "Display Title (Tablet)"
+				},
+				{
+					"id": "redirect_url",
+					"type": "url",
+					"label": "Redirect to"
+				},
+				{
+					"id": "horizontal",
+					"type": "text",
+					"label": "Horizontal Position",
+					"default": "0",
+					"info": "Unit: %"
+				},
+				{
+					"id": "vertical",
+					"type": "text",
+					"label": "Vertical Position",
+					"default": "0",
+					"info": "Unit: %"
+				},
+				{
+					"id": "width",
+					"type": "text",
+					"label": "Self Width",
+					"default": "50",
+					"info": "Unit: px"
+				},
+				{
+					"id": "height",
+					"type": "text",
+					"label": "Self Height",
+					"default": "50",
+					"info": "Unit: px"
+				},
+				{
+					"id": "icon_position",
+					"type": "select",
+					"label": "Icon Position",
+					"options": [
+						{
+							"group": "value",
+							"value": "left",
+							"label": "Left"
+						},
+						{
+							"group": "value",
+							"value": "right",
+							"label": "Right"
+						},
+						{
+							"group": "value",
+							"value": "top",
+							"label": "Top"
+						},
+						{
+							"group": "value",
+							"value": "bottom",
+							"label": "Bottom"
+						}
+
+					]
+				}
+			]
+		}
+	],
+	"settings": [
+		{
+			"type": "range",
+			"id": "padding_top",
+			"label": "Top spacing",
+			"min": 0,
+			"max": 80,
+			"default": 40,
+			"unit": "px"
+		},
+		{
+			"type": "range",
+			"id": "padding_bottom",
+			"label": "Bottom spacing",
+			"min": 0,
+			"max": 80,
+			"default": 40,
+			"unit": "px"
+		},
+		{
+			"type": "image_picker",
+			"id": "image",
+			"label": "Image",
+			"info": "954 x 954px recommended"
+		}
+	]
+}
+{% endschema %}

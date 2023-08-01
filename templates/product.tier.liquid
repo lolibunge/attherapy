@@ -1,0 +1,15 @@
+{%- layout none -%}
+{%- include 'customer_detect' -%}
+{%- if product.selected_variant.id -%}
+{%- render 'selected-tier-price',
+	product: product,
+	customer_group: customer_group,
+	customer_discount: customer_discount,
+	customer_specific_prices: customer_specific_prices -%}
+{%- else -%}
+{%- render 'min-tier-price',
+	product: product,
+	customer_group: customer_group,
+	customer_discount: customer_discount,
+	customer_specific_prices: customer_specific_prices -%}
+{%- endif -%}

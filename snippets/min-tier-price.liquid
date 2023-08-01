@@ -1,0 +1,54 @@
+{%- comment -%}
+Require variables:
+customer_group: customer_group
+customer_discount: customer_discount
+customer_specific_prices: customer_specific_prices
+not_ajax: true
+{%- endcomment -%}
+{%- if customer -%}
+	{%- assign NS = 'DEAR' -%}
+	{%- comment -%}
+	Check variant price
+	{%- endcomment -%}
+	{%- assign min_price = nil -%}
+	{%- assign from_price = false -%}
+	{%- for variant in product.variants -%}
+		{%- assign current_price = variant.price -%}
+		{%- if variant.metafields[NS][customer_group] != blank -%}
+			{%- assign current_price = variant.metafields[NS][customer_group] -%}
+		{%- endif -%}
+		{%- if customer_discount > 0 -%}
+			{%- assign current_price = 100.0 | minus: customer_discount | times: current_price | times: 0.01 | ceil -%}
+		{%- endif -%}
+		{%- if customer_specific_prices[variant.sku] and customer_specific_prices[variant.sku] < current_price -%}
+			{%- assign current_price = customer_specific_prices[variant.sku] -%}
+		{%- endif -%}
+		{%- comment -%}
+		same or diff
+		{%- endcomment -%}
+		{%- if min_price == nil -%}
+			{%- assign min_price = current_price -%}
+		{%- else -%}
+			{%- if min_price != current_price -%}
+				{%- assign from_price = true -%}
+				{%- if min_price > current_price -%}
+					{%- assign min_price = current_price -%}
+				{%- endif -%}
+			{%- endif -%}
+		{%- endif -%}
+	{%- endfor -%}
+	{%- if from_price -%}
+		{%- assign text = '<small><em>from<em></small> <span class="money">' -%}
+	{%- else -%}
+		{%- assign text = '<span class="money">' -%}
+	{%- endif -%}
+	{%- assign min_price = min_price | money -%}
+	{%- assign text = text | append: min_price | append: '</span>' -%}
+{%- else -%}
+	{%- assign text = 'products.general.price_tip' | t -%}
+{%- endif -%}
+{%- if not_ajax == true -%}
+<span class="money">{% if from_price %}<small><em>from</em></small> {% endif %}{{ min_price }}</span>
+{%- else -%}
+{"id": "{{product.id}}", "text": {{ text | json }}}
+{%- endif -%}

@@ -1,0 +1,40 @@
+{%- comment -%}
+Required values
+script_tag: boolean
+{%- endcomment -%}
+{% comment %} Detect User Group {% endcomment %}
+{%- assign customer_group = blank -%}
+{%- assign customer_discount = 0.0 -%}
+{%- assign customer_specific_prices = nil -%}
+{%- if customer -%}
+  {%- for tag in customer.tags -%}
+    {%- if tag contains 'Tier:' -%}
+      {%- assign customer_group = tag | split: ':' | last -%}
+    {%- elsif tag contains 'Discount:' -%}
+      {%- assign customer_discount = tag | split: ':' | last | strip | plus: 0.0 | abs -%}
+      {%- if customer_discount >= 100 -%}
+      	{%- assign customer_discount = 100.0 -%}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- if customer.metafields['DEAR'] -%}
+	{%- assign customer_specific_prices = customer.metafields['DEAR'] -%}
+{%- endif -%}
+{%- if script_tag == true -%}
+<script>
+var TierConfigs = {
+  login: {%- if customer -%}1{%- else -%}0{%- endif -%},
+	group: {{ customer_group | json }},
+	discount: {{ customer_discount }},
+	specific: {{ customer_specific_prices | json }},
+  price_tip: "{{ 'products.general.price_tip' | t }}",
+  sold_out: "{{ 'products.product.sold_out' | t }}",
+  status: [
+    {{ 'products.status.available' | t  | json }},
+    {{ 'products.status.sold_out' | t | json }},
+    {{ 'products.status.back_order' | t | json }}
+  ],
+};
+</script>
+{%- endif -%}

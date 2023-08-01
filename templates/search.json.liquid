@@ -1,0 +1,89 @@
+{% layout none %}
+
+{%- include 'customer_detect' -%}
+
+{%- liquid
+  assign NS = 'DEAR'
+  assign imgSrc = '""'
+  assign price = '""'
+  assign compare = '""'
+  assign collections = '""'
+  assign rawPrice = '""'
+  assign rawCompare = '""'
+  assign priceVaries = '""'
+  assign priceMin = '""'
+  assign textContent = '""'
+-%}
+
+{% capture results %}
+  {% for item in search.results %}
+
+    {% if item.object_type == 'product' %}
+      {%- liquid
+        assign imgSrc = item.featured_image.src | img_url: '200x'  | json
+        assign collections = item.collections | json
+        assign available = item.available | json
+        assign priceVaries = item.price_varies | json
+        if customer
+          assign variant = item.selected_or_first_available_variant
+          assign tier_price = variant.metafields[NS][customer_group]
+          assign current_price = variant.price
+          assign current_min_price = item.price_min
+
+          for vals in item.variants
+            if vals.metafields[NS][customer_group] and current_min_price > metafields[NS][customer_group]
+              assign current_min_price = vals.metafields[NS][customer_group]
+            endif
+          endfor
+
+          if tier_price
+            assign current_price = tier_price
+          endif
+
+          assign price = current_price | money | json
+          assign rawPrice = current_price | json
+          assign priceMin = current_min_price | json
+          assign compare = item.compare_at_price_max | money | json
+          assign rawCompare = item.compare_at_price_max | json
+        else
+          assign price = 'Login for price' | json
+          assign rawPrice = 'Login for price' | json
+          assign priceMin = 'Login for price' | json
+          assign compare = 'Login for price' | json
+          assign rawCompare = 'Login for price' | json
+        endif
+      -%}
+    {% elsif item.object_type == 'article' %}
+      {% if item.image.src != blank %}
+        {% assign imgSrc = item.image.src | img_url: '200x' | json %}
+      {% endif %}
+      {% assign textContent = item.excerpt | strip_html | truncatewords: 5 | json %}
+      {% assign available = true %}
+    {% elsif item.object_type == 'page' %}
+      {% assign available = true %}
+      {% assign textContent = item.content | strip_html | truncatewords: 5 | json %}
+    {% endif %}
+
+    {% assign product = item %}
+      {
+        "object_type": {{ product.object_type | json }},
+        "title"    : {{ product.title | json }},
+        "url"      : {{ product.url | json }},
+        "available": {{ available }},
+        "thumbnail": {{ imgSrc }},
+        "price"    : {{ price }},
+        "compare"  : {{ compare }},
+        "collections": {{ collections }},
+        "raw_price": {{ rawPrice }},
+        "raw_compare": {{ rawCompare }},
+        "price_varies": {{ priceVaries }},
+        "price_min": {{ priceMin }},
+        "text_content": {{ textContent }}
+      }
+    {% unless forloop.last %},{% endunless %}
+  {% endfor %}
+{% endcapture %}
+{
+  "results_count": {{ search.results_count }},
+  "results": [{{ results }}]
+}

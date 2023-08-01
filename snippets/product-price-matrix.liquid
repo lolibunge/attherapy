@@ -1,0 +1,60 @@
+{%- comment -%}
+Required values
+product: <product>
+variant: <product.variant>
+group: <customer_group> which defind at customer_detect.liquid
+check: <boolean>
+This only use in product__main.liquid section
+{%- endcomment -%}
+
+{%- comment -%}Get Current Price{%- endcomment -%}
+{%- assign NS = 'DEAR' -%}
+{%- assign current_price = variant.price -%}
+{%- assign current_compare_price = variant.compare_at_price -%}
+{%- if check -%}
+	{%- assign current_price = variant.metafields[NS][group] -%}
+	{%- comment -%}
+	{%- if current_price != nil -%}
+		{%- assign current_compare_price = variant.price -%}
+	{%- endif -%}
+	{%- endcomment -%}
+{% endif %}
+
+{%- comment %} Current price {% endcomment -%}
+<span class="{% if current_compare_price > current_price %}sale{% endif %}">
+<span class="current_price {% if product.available == false %}hidden{% endif %}">
+  {% if variant.price > 0 %}
+    <span class="money">
+      {% render 'price-element', price: current_price %}
+    </span>
+  {% else %}
+    {{ settings.free_price_text }}
+  {% endif %}
+</span>
+</span>
+
+{%- comment %} Compare at (original) price {% endcomment -%}
+<span class="was-price">
+{% if current_price < current_compare_price and variant.available %}
+  <span class="money">
+    {% render 'price-element', price: current_compare_price %}
+  </span>
+{% endif %}
+</span>
+
+<script id="{{ product.id }}-prices" type="application/json">
+{
+	{%- for v in product.variants -%}
+		{%- if v.metafields[NS] -%}
+		'{{ v.id | json }}': [
+			{%- for metafield in v.metafields[NS] -%}
+				{%- assign v_price = metafield | last -%}
+				{%- assign hash = v_price | append: v.id | plus: 0 | times: 3 -%}
+				{"key": {{ metafield | first | json }},
+				"price": {{ v_price | json }},
+				"hash": {{ hash }}}{%- if forloop.last == false -%},{%- endif -%}
+			{%- endfor -%}]{%- if forloop.last == false -%},{%- endif -%}
+		{%- endif -%}
+	{%- endfor -%}
+}
+</script>

@@ -1,0 +1,194 @@
+{%- comment -%}
+Required values
+product: <product>
+group: <customer_group> which defind at customer_detect.liquid
+discount: <customer_discount> inherit from customer_detect
+specific_prices: <specific_prices> inherit from customer_detect
+This only use in product__main.liquid section
+{%- endcomment -%}
+
+{%- comment -%}
+Bulk Buy Discount Promo
+{%- endcomment -%}
+{%- liquid
+	assign promote_html = ''
+	assign NS = 'Bulk-Buy'
+-%}
+{%- if product.metafields[NS][group] != blank -%}
+	{%- assign promote_text = product.metafields[NS][group] -%}
+	{%- capture promote_html -%}
+	<div class="promote-text">{{ 'products.general.promote_tip'| t: promote: promote_text }}</div>
+	{%- endcapture -%}
+{%- endif -%}
+
+{%- liquid
+	assign option_size = product.options | size
+	assign list_class = 'one-third'
+	if option_size == 3
+		assign list_class = 'one-fifth'
+	elsif option_size == 2
+		assign list_class = 'one-fourth'
+	endif
+-%}
+
+{%- capture list_form -%}
+
+	<div class="product_form_list container is-justtify-space-between has-no-side-gutter">
+		{%- for option in product.options -%}
+			<div class="column header {{ list_class }}">{{ option }}</div>
+		{%- endfor -%}
+		<div class="column header {{list_class}}">Product SKU</div>
+		<div class="column header {{list_class}}">Quantity</div>
+		{%- for variant in product.variants -%}
+			{%- assign option_names = variant.title | split: '/' -%}
+			{%- for option in product.options -%}
+				{%- assign option_name = option_names[forloop.index0] | strip -%}
+				<div class="column {{ list_class }}">
+					{%- if option_name contains 'Default Title' -%}
+						{{ product.title }}
+					{%- else -%}
+						{{ option_name }}
+					{%- endif -%}
+				</div>
+			{%- endfor -%}
+			<div class="column {{list_class}}">{{variant.sku}}</div>
+			<div class="column input-field {{ list_class }}">
+				{%- assign variant_options = variant.title | split: ' / ' -%}
+				{%- render 'matrix_input_field',
+					variant: variant,
+					title: product.title,
+					variant_options: variant_options,
+					group: group,
+					discount: discount,
+					specific: specific -%}
+			</div>
+		{%- endfor -%}
+	</div>
+{%- endcapture -%}
+
+{%- comment -%} Matrix Form Only show when option = 2 
+{%- assign matrix_form = '' -%}
+{%- if option_size == 2 -%}
+	{%- assign optionA = product.options_with_values | first -%}
+	{%- assign optionB = product.options_with_values | last -%}
+	{%- assign matrix_class = optionB.values | size -%}
+	{%- if matrix_class == 1 -%}
+		{%- assign matrix_class = 'one-half' -%}
+	{%- elsif matrix_class == 2 -%}
+		{%- assign matrix_class = 'one-third' -%}
+	{%- elsif matrix_class == 3 -%}
+		{%- assign matrix_class = 'one-fourth' -%}
+	{%- elsif matrix_class == 4 -%}
+		{%- assign matrix_class = 'one-fifth' -%}
+	{%- elsif matrix_class == 5 -%}
+		{%- assign matrix_class = 'one-sixth' -%}
+	{%- elsif matrix_class == 6 -%}
+		{%- assign matrix_class = 'one-seventh' -%}
+	{%- elsif matrix_class == 7 -%}
+		{%- assign matrix_class = 'one-eighth' -%}
+	{%- endif -%}
+
+	{%- capture matrix_form -%}
+	<div class="product_form_list container is-justtify-space-between has-no-side-gutter">
+		{% for v in optionA.values %}
+			{%- if forloop.index0 == 0 -%}
+				<div class="column header {{ matrix_class }}">&nbsp;</div>
+				{%- for vv in optionB.values -%}
+					<div class="column header {{ matrix_class }}">{{ vv }}</div>
+				{%- endfor -%}
+			{%- endif -%}
+			<div class="column header {{ matrix_class }}">{{ v }}</div>
+			{%- for vv in optionB.values -%}
+				{%- capture html_content -%}
+					{%- for variant in product.variants -%}
+						{%- assign variant_options = variant.title | split: ' / ' -%}
+						{%- if variant_options[0] == v and variant_options[1] == vv -%}
+							<div class="column input-field {{ matrix_class }}">
+								{%- render 'matrix_input_field',
+									variant: variant,
+									title: product.title,
+									variant_options: variant_options,
+									group: group,
+									discount: discount,
+									specific: specific -%}
+							</div>
+							{%- break -%}
+						{%- endif -%}
+					{%- endfor -%}
+				{%- endcapture -%}
+				{%- if html_content == blank -%}
+					<div class="column {{ matrix_class }} text-center">N/A</div>
+				{%- else -%}
+					{{ html_content }}
+				{%- endif -%}
+			{%- endfor -%}
+		{% endfor %}
+	</div>
+	{%- endcapture %}
+{%- endif -%}
+{%- endcomment -%}
+
+{%- comment -%}
+Render HTML
+{%- endcomment -%}
+<div class="variants-desktop-only">
+	{%- if false -%}
+		<!-- Promo Text -->
+		{{ promote_html }}
+		<!--Start tab labels-->
+		
+			<ul class="tabs">
+			<li class="tab2"><a class="active" href="#tab2">MATRIX</a></li>
+			<li class="tab1"><a href="#tab1">LIST</a></li>
+			</ul>
+			<!--Start tab content-->
+			<ul class="tabs-content">
+				<li class="active" id="tab2">
+					{{ matrix_form }}
+				</li>
+				<li id="tab1">
+					{{ list_form }}
+				</li>
+			</ul>
+		
+	{%- else -%}
+		<!-- Promo Text -->
+		{{ promote_html }}
+		<!--Start tab labels-->
+		<ul class="tabs">
+			<li><a href="#tab1" class="active">LIST</a></li>
+		</ul>
+		<ul class="tabs-content">
+			<li class="active" id="tab1">
+				{{ list_form }}
+			</li>
+		</ul>
+	{%- endif -%}
+
+</div>
+{% comment %}
+<div class="variants-mobile-only">
+	{%
+		render 'product__form',
+		context: 'product',
+		product: product,
+		sold_out_options: sold_out_options,
+		selected_variant: selected_variant,
+		show_payment_button: block.settings.show_payment_button,
+		collection_handles: collection_handles
+	%}
+</div>
+{% endcomment %}
+
+{%- unless shop.taxes_included -%}
+	<div class="exclude-taxes one-whole text-align-right variants-desktop-only">{{ 'products.general.exclude_taxes' | t }}</div>
+{%- endunless -%}
+
+<div class="add-to-cart one-whole container is-justtify-space-between has-no-side-gutter variants-desktop-only">
+	<div class="two-thirds is-hidden-mobile-only">&nbsp;</div>
+	<button class="one-third medium-down--one-whole button button--add-to-cart">{{ 'products.product.add_to_cart' | t  | upcase }}</buttn>
+</div>
+<div class="one-whole container is-justtify-space-between has-no-side-gutter has-padding-top">
+	<div class="two-thirds is-hidden-mobile-only">&nbsp;</div>
+	<div class="one-third medium-down--one-whole text-right"></div>
+</div>
