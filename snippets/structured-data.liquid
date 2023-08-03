@@ -314,23 +314,14 @@
     "@context": "http://schema.org/",
     "@type": "Product",
     "name": {{ product_name | strip_newlines | json }},
-    "image": {{ product_image | img_url: '1024x1024' | prepend: 'https:' | json }},
-    {% if product.description != blank %}
-      "description": {{ product.description | json }},
-    {% endif %}
-    {% if product.vendor %}
-      "brand": {
+    "image": {{ product_image | img_url: '1024x1024' | prepend: 'https:' | json }}{% if product.description != blank %},
+    "description": {{ product.description | json }}{% endif %}{% if product.vendor %},
+    "brand": {
         "@type": "Thing",
         "name": {{ product.vendor | json }}
-      },
-    {% endif %}
-    {% if selected_variant.sku != blank %}
-      "sku": {{ selected_variant.sku | json }},
-    {% endif %}
-    {% if selected_variant.barcode != blank %}
-      "mpn": {{ selected_variant.barcode | json }}
-    {% endif %}
-    
+      }{% endif %}{% if selected_variant.sku != blank %},
+    "sku": {{ selected_variant.sku | json }}{% endif %}{% if selected_variant.barcode != blank %},
+    "mpn": {{ selected_variant.barcode | json }}{% endif %}
   }
   </script>
 {% endif %}
