@@ -328,9 +328,19 @@
       "sku": {{ selected_variant.sku | json }},
     {% endif %}
     {% if selected_variant.barcode != blank %}
-      "mpn": {{ selected_variant.barcode | json }}
+      "mpn": {{ selected_variant.barcode | json }},
     {% endif %}
-    
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": {{ cart.currency.iso_code | json }},
+      "availability": "http://schema.org/{% if selected_variant.available %}InStock{% else %}OutOfStock{% endif %}",
+      "url": "{{ shop.url }}{{ selected_variant.url }}",
+      "seller": {
+        "@type": "Organization",
+        "name": {{ shop.name | json }}
+      },
+      "priceValidUntil": {{ year_from_now | json }}
+    }
   }
   </script>
 {% endif %}
